@@ -1,6 +1,7 @@
 from urllib2 import urlopen
 import json
 import re
+import unicodedata
 import pdb
 
 class OscarsAPI:
@@ -50,21 +51,36 @@ class OscarsAPI:
       film['budget'] = '0'
 
   def format_budget_number(self, film):
-    # the code directly below the case numbers 
-    # deals with the individual edge cases    
-    million = re.findall(r'\million', film['budget'])
-    usd = re.findall(r'\$', film['budget'])
+    # the code directly below the case number comments 
+    # deals with the individual edge cases
+    budget_range = re.findall(r'\-', film['budget'])
+
+    # case1 = if a range is given ie "$10 - $12 million"
+    if budget_range:
+      self.budget_given_as_range(film)
+
+    # case2 = majority are in USD format ie "$10 million" 
+    # or "$10.2 million" (budget variable is converted to float)
     budget_number = re.findall(r'[\d.]*\d+', film['budget'])
     budget = float(''.join(budget_number))
-
-    # case1 = majority are in USD format ie "$10 million" 
-    # or "$10.2 million" (budget variable is converted to float)
+    million = re.findall(r'\million', film['budget'])
+    usd = re.findall(r'\$', film['budget'])
+    # £
+    gbp = re.findall(r'xa3', film['budget'])
     if usd and million:            
       budget *= 1000000
+    if gbp:
+      pdb.set_trace()
 
+    # case3 = actual value is given no change is needed ie "$1,430,000"
+    film['budget'] = budget
 
-    # case2 = actual value is given no change is needed ie "$1,430,000"
-    film['budget'] = budget    
+  def budget_given_as_range(self, film):
+    budget_number = re.findall(r'[\d.]*\d+', film['budget'])
+    budget1 = float(''.join(budget_number[0]))
+    budget2 = float(''.join(budget_number[1]))
+    average_budget_range = (budget1 + budget2)/2
+    film['budget'] = re.sub(r'[\d.-]*\d+', str(average_budget_range), film['budget'])
       
 
   def print_winning_films(self, film):    
