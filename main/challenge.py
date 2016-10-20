@@ -1,5 +1,6 @@
 from urllib2 import urlopen
 import json
+import re
 import pdb
 
 class OscarsAPI:
@@ -13,30 +14,37 @@ class OscarsAPI:
   def populate_winning_films(self):
     films_per_year = self.all_films['results']
     for films in films_per_year:
+        # removes footnotes and whitespace
+        cleaned_year = re.sub("[\(\[].*?[\)\]]", '', films.values()[1]).strip()
+      
       for film in films.values()[0]:
         if film['Winner'] == True:
-          self.winning_films.append({"name": film['Film'], "detail_url": film['Detail URL'], "year": films.values()[1]})
+          # removes footnotes and whitespace
+          cleaned_title = re.sub("[\(\[].*?[\)\]]", '', film['Film']).strip()
+          self.winning_films.append({"name": cleaned_title, "detail_url": film['Detail URL'], "year": cleaned_year})
+
     
   def add_budget_to_winning_films(self):
     for film in self.winning_films:
       detail_url = film['detail_url']
       response = urlopen(detail_url)
       film_detail = json.load(response)  
-      # if film_detail['Budget']:
-      film['budget'] = film_detail['Budget']
-      # else:
-        # film['budget'] = 0
+
+      # some films don't have budget data
+      if 'Budget' in film_detail:
+        film['budget'] = film_detail['Budget']
+        film['budget'] = re.sub("[\(\[].*?[\)\]]", '', film['budget']).strip()
+      else:
+        film['budget'] = '0'
+
+      # add formulas to fix the budget
+      usd = re.findall(r'\$', film['budget'])
       pdb.set_trace()
-
-
-
 
 
   def print_winning_films(self):
     for film in self.winning_films:
-      pdb.set_trace()
       print film['name'] + ' - ' + film['year'] + ' - ' + film['budget']
-
 
 
 
