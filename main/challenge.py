@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from urllib2 import urlopen
 import json
 import re
@@ -48,7 +49,7 @@ class OscarsAPI:
       film['budget'] = film_detail['Budget']
       film['budget'] = re.sub("[\(\[].*?[\)\]]", '', film['budget']).strip()
     else:
-      film['budget'] = '0'
+      film['budget'] = '$0'
 
   def format_budget_number(self, film):
     # the code directly below the case number comments 
@@ -59,21 +60,34 @@ class OscarsAPI:
     if budget_range:
       self.budget_given_as_range(film)
 
+
     # case2 = majority are in USD format ie "$10 million" 
     # or "$10.2 million" (budget variable is converted to float)
     budget_number = re.findall(r'[\d.]*\d+', film['budget'])
     budget = float(''.join(budget_number))
     million = re.findall(r'\million', film['budget'])
     usd = re.findall(r'\$', film['budget'])
-    # £
-    gbp = re.findall(r'xa3', film['budget'])
+
+    if not usd:
+      self.budget_not_in_usd(film, budget)
+      budget_number = re.findall(r'[\d.]*\d+', film['budget'])
+      budget = float(''.join(budget_number))
+#change to else if
     if usd and million:            
       budget *= 1000000
-    if gbp:
-      pdb.set_trace()
-
     # case3 = actual value is given no change is needed ie "$1,430,000"
     film['budget'] = budget
+
+
+
+  def budget_not_in_usd(self, film, budget):
+    currency = film['budget'][0].encode('utf-8')
+    if currency == "£":
+      converted_budget = float(budget * 1.23)
+      film['budget'] = re.sub(r'\d.+', str(converted_budget), film['budget'])
+      pdb.set_trace()
+
+      
 
   def budget_given_as_range(self, film):
     budget_number = re.findall(r'[\d.]*\d+', film['budget'])
