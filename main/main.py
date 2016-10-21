@@ -3,9 +3,8 @@ from urllib2 import urlopen
 import json
 import re
 import pdb
-# from main.get_winners import populate_winning_films
 
-class OscarsAPI:
+class OscarsAPI():
 
   def __init__(self):
     # get request to api to get all of the films to start
@@ -43,6 +42,7 @@ class OscarsAPI:
 
     print "Average - %d" % int(self.total_budgets/self.film_count)
   
+
   def add_budget_to_winning_films(self, film):
     # requires another api get request to detail url
     detail_url = film['detail_url']
@@ -57,9 +57,11 @@ class OscarsAPI:
     else:
       film['budget'] = '0'
 
+
   def format_budget_number(self, film):
+    # pdb.set_trace()
     # the code directly below the case number comments 
-    # explains with the individual edge cases
+    # explains the individual edge cases
     
     # case1 = if budget is given twice ie "$10m or £500,000"
     # the first one is taken
@@ -74,19 +76,20 @@ class OscarsAPI:
       self.budget_given_as_range(film)
 
     # case3 = majority are in USD format ie "$10 million" or "$10.2 million"
-    budget_number = re.findall(r'[\d.]*\d+', film['budget'])
+    # grabs only the integers and periods from the string for manipulation
+    budget_number = re.findall(r'[\d.]*\d+', film['budget'])    
     budget = float(''.join(budget_number))
-    million = re.findall(r'\million', film['budget'])
+    million = re.findall(r'\illion', film['budget'])
     usd = re.findall(r'\$', film['budget'])
 
     # case4 = if another currency symbol is given
     if not usd and budget != 0:
       self.budget_not_in_usd(film, budget)
+      # have to reset these variables after the conversion
       budget_number = re.findall(r'[\d.]*\d+', film['budget'])
       budget = float(''.join(budget_number))
     
-    # case5 = if budget is formatted as string ie "10 million"
-    # in any currency
+    # case5 = if budget is formatted as string ie "10 million" in any currency
     if million:            
       budget *= 1000000
     
@@ -128,5 +131,6 @@ class OscarsAPI:
   def run_all(self):
     self.populate_winning_films()
 
-get_films = OscarsAPI()
-get_films.run_all()
+if __name__ == "__main__":
+  get_films = OscarsAPI()
+  get_films.run_all()
