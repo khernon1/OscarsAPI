@@ -10,6 +10,7 @@ ___
 2. Activate the virtual environment `source env/bin/activate`
 3. In the terminal, run `python main/main.py` and the results will print
 4. To run the tests, run `python test.py`. There is only one test but it runs for all of the edge cases.
+
 ___
 
 The average budget using my calculations is $17,240,234.
