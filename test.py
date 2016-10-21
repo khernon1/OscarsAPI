@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 from main.main import OscarsAPI
 import re
@@ -7,22 +8,25 @@ class TestOscarsAPI(unittest.TestCase):
 
   def setUp(self):
     self.test_films = []
-    add_film = {'budget': u'US$ 2 million', 'name': u'Movie1'}
-    # add_film = {'name': u'Movie1', 'budget': u'$1 million'}
-    self.test_films.append(add_film) 
-    self.test_budget_formatter()
-
+    self.test_films = [
+      {'budget': u'$10 million', 'name': u'Movie1'},
+      {'budget': u'$9-11 million', 'name': u'Movie2'},
+      {'budget': u'US$10 million', 'name': u'Movie3'},
+      {'budget': u'$10,000,000', 'name': u'Movie4'},
+      {'budget': u'£9-11 million', 'name': u'Movie5'},
+      {'budget': u'€9-11 million', 'name': u'Movie6'}
+    ]
+# 8,130,081
   def test_budget_formatter(self):    
     run_tests = OscarsAPI()
     for film in self.test_films:
-      # pdb.set_trace()      
+      usd = re.findall(r'\$', film['budget'])
       run_tests.format_budget_number(film)
-
-      budget = film['budget']
-      # int(budget) == 5000000
-      # self.assertEqual(int(budget), 5000000)
-
-# go = TestOscarsAPI()
+      
+      if usd:
+        self.assertEqual(int(film['budget']), 10000000)
+      else:
+        self.assertEqual(int(film['budget']), 12300000)
 
 if __name__ == '__main__':
     unittest.main()

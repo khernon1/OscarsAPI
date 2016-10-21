@@ -59,12 +59,11 @@ class OscarsAPI():
 
 
   def format_budget_number(self, film):
-    # pdb.set_trace()
     # the code directly below the case number comments 
     # explains the individual edge cases
     
     # case1 = if budget is given twice ie "$10m or £500,000"
-    # the first one is taken
+    # the first one is taken    
     two_budgets = re.findall(r'\or', film['budget'])
     if two_budgets:
       self.two_budgets_given(film)
@@ -112,15 +111,24 @@ class OscarsAPI():
     film['budget'] = re.sub(r'[\d.–-]*\d+', str(average_budget_range), film['budget'].encode('utf-8'))
 
       
-  def budget_not_in_usd(self, film, budget):
-    currency = film['budget'][0].encode('utf-8')
-    if self.currency_list[currency]:
-      converted_budget = float(budget * self.currency_list[currency])
-      film['budget'] = re.sub(r'\d.+', str(converted_budget), film['budget'])
+  def budget_not_in_usd(self, film, budget):      
+    # the if statement was added because the hardcoded tests were encoded differently
+    if ord(film['budget'][0]) > 128:
+      currency = film['budget'][0:2].decode('utf-8').encode('utf-8')
+    else:
+      currency = film['budget'][0].encode('utf-8')
+    
+    try:      
+      if self.currency_list[currency]:
+        converted_budget = float(budget * self.currency_list[currency])
+        film['budget'] = re.sub(r'\d.+', str(converted_budget), film['budget'])
+  
+    except:
+      print "Unknown Currency in %s" % film['name']
 
 
   def print_winning_films(self, film):    
-    print film['name'] + ' - ' + film['year'] + ' - {:,d}'.format(int(round(film['budget'],0)))
+    print film['name'] + ' - ' + film['year'] + ' - ${:,d}'.format(int(round(film['budget'],0)))
   
 
   def average_budget(self, film):
