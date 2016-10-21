@@ -40,7 +40,7 @@ class OscarsAPI():
           if added_film['budget'] != 0:
             self.average_budget(added_film)
 
-    print "Average - %d" % int(self.total_budgets/self.film_count)
+    print "Average - ${:,d}".format(int(self.total_budgets/self.film_count))
   
 
   def add_budget_to_winning_films(self, film):
@@ -111,24 +111,19 @@ class OscarsAPI():
     film['budget'] = re.sub(r'[\d.–-]*\d+', str(average_budget_range), film['budget'].encode('utf-8'))
 
       
-  def budget_not_in_usd(self, film, budget):      
-    # the if statement was added because the hardcoded tests were encoded differently
-    if ord(film['budget'][0]) > 128:
-      currency = film['budget'][0:2].decode('utf-8').encode('utf-8')
-    else:
+  def budget_not_in_usd(self, film, budget):          
+    try:
       currency = film['budget'][0].encode('utf-8')
-    
-    try:      
       if self.currency_list[currency]:
         converted_budget = float(budget * self.currency_list[currency])
         film['budget'] = re.sub(r'\d.+', str(converted_budget), film['budget'])
   
-    except:
+    except Exception:
       print "Unknown Currency in %s" % film['name']
 
 
   def print_winning_films(self, film):    
-    print film['name'] + ' - ' + film['year'] + ' - ${:,d}'.format(int(round(film['budget'],0)))
+    print film['year'] + ' - ' + film['name'] + ' - ${:,d}'.format(int(round(film['budget'],0)))
   
 
   def average_budget(self, film):

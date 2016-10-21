@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 from main.main import OscarsAPI
+import json
 import re
 import pdb
 
@@ -13,14 +14,18 @@ class TestOscarsAPI(unittest.TestCase):
       {'budget': u'$9-11 million', 'name': u'Movie2'},
       {'budget': u'US$10 million', 'name': u'Movie3'},
       {'budget': u'$10,000,000', 'name': u'Movie4'},
-      {'budget': u'£9-11 million', 'name': u'Movie5'},
-      {'budget': u'€9-11 million', 'name': u'Movie6'}
+      {'budget': u'£10 million', 'name': u'Movie5'},
+      {'budget': u'€10 million', 'name': u'Movie6'}
     ]
-# 8,130,081
+
   def test_budget_formatter(self):    
     run_tests = OscarsAPI()
-    for film in self.test_films:
+    json_films = json.dumps(self.test_films)
+    json_films = json.loads(json_films)
+    # pdb.set_trace()
+    for film in json_films:
       usd = re.findall(r'\$', film['budget'])
+
       run_tests.format_budget_number(film)
       
       if usd:
