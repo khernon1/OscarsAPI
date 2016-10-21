@@ -36,7 +36,7 @@ class OscarsAPI:
             total_budgets += added_film['budget']
             film_count += 1
             average_budget = total_budgets/film_count
-          
+
     print "Average - %d" % int(average_budget)
     
   def add_budget_to_winning_films(self, film):
@@ -54,11 +54,13 @@ class OscarsAPI:
   def format_budget_number(self, film):
     # the code directly below the case number comments 
     # deals with the individual edge cases
-    budget_range = re.findall(r'\-', film['budget'])
+    budget_range = re.findall(r'\-|\–', film['budget'].encode('utf-8'))
+
     two_budgets = re.findall(r'\or', film['budget'])
 
     if two_budgets:
       self.two_budgets_given(film)
+
     # case1 = if a range is given ie "$10 - $12 million"
     if budget_range:
       self.budget_given_as_range(film)
@@ -89,17 +91,19 @@ class OscarsAPI:
     film['budget'] = split_budgets[0]
       
   def budget_given_as_range(self, film):
+    # budget = re.split('\-|\–|  ', film['budget'].encode('utf-8'))
+    
     budget_number = re.findall(r'[\d.]*\d+', film['budget'])
     budget1 = float(''.join(budget_number[0]))
     budget2 = float(''.join(budget_number[1]))
     average_budget_range = (budget1 + budget2)/2
-    film['budget'] = re.sub(r'[\d.-]*\d+', str(average_budget_range), film['budget'])
+    film['budget'] = re.sub(r'[\d.–-]*\d+', str(average_budget_range), film['budget'].encode('utf-8'))
       
   def budget_not_in_usd(self, film, budget):
     currency = film['budget'][0].encode('utf-8')
     # add dict to search through and get rate
     if currency == "£":
-      converted_budget = float(budget * 1.33)
+      converted_budget = float(budget * 1.23)
       film['budget'] = re.sub(r'\d.+', str(converted_budget), film['budget'])
 
   def print_winning_films(self, film):    
