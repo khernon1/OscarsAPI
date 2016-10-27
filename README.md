@@ -2,7 +2,7 @@
 ___
 ### Goal:
 
-Send requests to the API and calculate the average budget for all Oscar winning film's.
+Send requests to the API and calculate the average budget for all Oscar winning films.
 ___
 ### To run:
 
